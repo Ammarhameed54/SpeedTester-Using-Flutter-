@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   percent_indicator: ^4.2.3
   syncfusion_flutter_gauges: ^25.2.5
+  flutter_internet_speed_test: ^1.5.0
 
 dev_dependencies:
   flutter_test:

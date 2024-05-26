@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
+    import 'package:flutter_internet_speed_test/flutter_internet_speed_test.dart';
 
 class SpeedTester extends StatefulWidget {
   const SpeedTester({super.key});
@@ -13,6 +14,11 @@ class _SpeedTesterState extends State<SpeedTester> {
   double displayProgress = 0.2;
   final double _downloadspeed = 0.0;
   final double _uploadspeed = 0.0;
+  double displaySpeed = 0.0;
+  bool service = false;
+  String? isp;
+  String? asp;
+  String? asn;
 
   @override
   Widget build(BuildContext context) {
@@ -114,17 +120,89 @@ class _SpeedTesterState extends State<SpeedTester> {
                       endWidth: 15,
                     ),
                   ],
-                  pointers: const [
+                  pointers: [
                     NeedlePointer(
+                      value: displaySpeed,
                       needleColor: Colors.white,
+                      enableAnimation: true,
+                      knobStyle: const KnobStyle(color: Colors.black),
+                    )
+                  ],
+                  annotations: [
+                    GaugeAnnotation(
+                      widget: Text(
+                        displaySpeed.toStringAsFixed(2),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 25),
+                      ),
+                      angle: 90,
+                      positionFactor: 0.7,
                     )
                   ],
                 )
               ],
-            )
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Text(
+              service
+                  ? "Selecting Server.... "
+                  : "IP : ${isp ?? '__'} | Asp: ${asn ?? '__'} | Isp : ${isp ?? '__'}",
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 100, 181, 248)),
+                onPressed: () {},
+                child: const Text("Start"))
           ],
         ),
       ),
     );
   }
+  testing(){
+
+    
+    final speedTest = FlutterInternetSpeedTest();
+    speedTest.startTesting(
+        useFastApi: true/false //true(default)
+        onStarted: () {
+          // TODO
+        },
+        onCompleted: (TestResult download, TestResult upload) {
+          // TODO
+        },
+        onProgress: (double percent, TestResult data) {
+          // TODO
+        },
+        onError: (String errorMessage, String speedTestError) {
+          // TODO
+        },
+        onDefaultServerSelectionInProgress: () {
+          // TODO
+          //Only when you use useFastApi parameter as true(default)
+        },
+        onDefaultServerSelectionDone: (Client? client) {
+          // TODO
+          //Only when you use useFastApi parameter as true(default)
+        },
+        onDownloadComplete: (TestResult data) {
+          // TODO
+        },
+        onUploadComplete: (TestResult data) {
+          // TODO
+        },
+        onCancel: () {
+        // TODO Request cancelled callback
+        },
+    );
+  }
+ 
 }
