@@ -1,7 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
-    import 'package:flutter_internet_speed_test/flutter_internet_speed_test.dart';
+import 'package:flutter_internet_speed_test/flutter_internet_speed_test.dart';
 
 class SpeedTester extends StatefulWidget {
   const SpeedTester({super.key});
@@ -12,13 +13,14 @@ class SpeedTester extends StatefulWidget {
 
 class _SpeedTesterState extends State<SpeedTester> {
   double displayProgress = 0.2;
-  final double _downloadspeed = 0.0;
-  final double _uploadspeed = 0.0;
+  double _downloadspeed = 0.0;
+  double _uploadspeed = 0.0;
   double displaySpeed = 0.0;
   bool service = false;
   String? isp;
   String? asp;
   String? asn;
+  bool testingStarted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -160,49 +162,74 @@ class _SpeedTesterState extends State<SpeedTester> {
             ElevatedButton(
                 style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromARGB(255, 100, 181, 248)),
-                onPressed: () {},
+                onPressed: () {
+                  testing();
+                },
                 child: const Text("Start"))
           ],
         ),
       ),
     );
   }
-  testing(){
 
-    
+  testing() {
     final speedTest = FlutterInternetSpeedTest();
     speedTest.startTesting(
-        useFastApi: true/false //true(default)
-        onStarted: () {
-          // TODO
-        },
-        onCompleted: (TestResult download, TestResult upload) {
-          // TODO
-        },
-        onProgress: (double percent, TestResult data) {
-          // TODO
-        },
-        onError: (String errorMessage, String speedTestError) {
-          // TODO
-        },
-        onDefaultServerSelectionInProgress: () {
-          // TODO
-          //Only when you use useFastApi parameter as true(default)
-        },
-        onDefaultServerSelectionDone: (Client? client) {
-          // TODO
-          //Only when you use useFastApi parameter as true(default)
-        },
-        onDownloadComplete: (TestResult data) {
-          // TODO
-        },
-        onUploadComplete: (TestResult data) {
-          // TODO
-        },
-        onCancel: () {
+      onStarted: () {
+        setState(() {
+          testingStarted = true;
+        });
+      },
+      onCompleted: (TestResult download, TestResult upload) {
+        setState(() {
+          _downloadspeed = download.transferRate;
+          displayProgress = 100.0;
+          displaySpeed = _downloadspeed;
+        });
+        setState(() {
+          _uploadspeed = upload.transferRate;
+          displayProgress = 100.0;
+          displaySpeed = _uploadspeed;
+          testingStarted = false;
+        });
+      },
+      onProgress: (double percent, TestResult data) {
+        setState(() {
+          if (data.type == TestType.download) {
+            _downloadspeed = data.transferRate;
+            displaySpeed = _downloadspeed;
+            displayProgress = percent;
+          } else {
+            _uploadspeed = data.transferRate;
+            displaySpeed = _uploadspeed;
+            displayProgress = percent;
+          }
+        });
+      },
+      onError: (String errorMessage, String speedTestError) {
+        if (kDebugMode) {
+          print("error : $errorMessage$speedTestError");
+        }
+      },
+      onDefaultServerSelectionInProgress: () {
+        setState(() {
+          service = true;
+        });
+      },
+      onDefaultServerSelectionDone: (Client? client) {
+        setState(() {
+          service = false;
+        });
+      },
+      onDownloadComplete: (TestResult data) {
+        // TODO
+      },
+      onUploadComplete: (TestResult data) {
+        // TODO
+      },
+      onCancel: () {
         // TODO Request cancelled callback
-        },
+      },
     );
   }
- 
 }
