@@ -12,15 +12,16 @@ class SpeedTester extends StatefulWidget {
 }
 
 class _SpeedTesterState extends State<SpeedTester> {
-  double displayProgress = 0.2;
+  double displayProgress = 0.0;
   double _downloadspeed = 0.0;
   double _uploadspeed = 0.0;
   double displaySpeed = 0.0;
   bool service = false;
-  String? isp;
-  String? asp;
-  String? asn;
   bool testingStarted = false;
+  String? ip;
+  String? isp;
+  String? asn;
+  String unitText = '';
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +51,7 @@ class _SpeedTesterState extends State<SpeedTester> {
               height: 10,
             ),
             LinearPercentIndicator(
-              percent: displayProgress,
+              percent: displayProgress / 100.0,
               progressColor: Colors.greenAccent,
               lineHeight: 20,
               center: Text(
@@ -84,12 +85,12 @@ class _SpeedTesterState extends State<SpeedTester> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _downloadspeed.toStringAsFixed(2),
+                        _downloadspeed.toStringAsFixed(2) + unitText,
                         style: const TextStyle(
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        _uploadspeed.toStringAsFixed(2),
+                        _uploadspeed.toStringAsFixed(2) + unitText,
                         style: const TextStyle(
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
@@ -112,12 +113,12 @@ class _SpeedTesterState extends State<SpeedTester> {
                   axisLabelStyle: const GaugeTextStyle(color: Colors.white),
                   interval: 4,
                   minimum: 0,
-                  maximum: 25,
+                  maximum: 50,
                   ranges: [
                     GaugeRange(
                       color: const Color.fromARGB(255, 100, 181, 248),
                       startValue: 0,
-                      endValue: 24,
+                      endValue: 50,
                       startWidth: 10,
                       endWidth: 15,
                     ),
@@ -133,11 +134,11 @@ class _SpeedTesterState extends State<SpeedTester> {
                   annotations: [
                     GaugeAnnotation(
                       widget: Text(
-                        displaySpeed.toStringAsFixed(2),
+                        displaySpeed.toStringAsFixed(2) + unitText,
                         style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
-                            fontSize: 25),
+                            fontSize: 20),
                       ),
                       angle: 90,
                       positionFactor: 0.7,
@@ -152,7 +153,7 @@ class _SpeedTesterState extends State<SpeedTester> {
             Text(
               service
                   ? "Selecting Server.... "
-                  : "IP : ${isp ?? '__'} | Asp: ${asn ?? '__'} | Isp : ${isp ?? '__'}",
+                  : "IP : ${ip ?? '__'} | Asp: ${asn ?? '__'} | Isp : ${isp ?? '__'}",
               style: const TextStyle(
                   color: Colors.white, fontWeight: FontWeight.bold),
             ),
@@ -182,11 +183,13 @@ class _SpeedTesterState extends State<SpeedTester> {
       },
       onCompleted: (TestResult download, TestResult upload) {
         setState(() {
+          unitText = download.unit == SpeedUnit.kbps ? 'Kb/s' : 'Mb/s';
           _downloadspeed = download.transferRate;
           displayProgress = 100.0;
           displaySpeed = _downloadspeed;
         });
         setState(() {
+          unitText = download.unit == SpeedUnit.kbps ? 'Kb/s' : 'Mb/s';
           _uploadspeed = upload.transferRate;
           displayProgress = 100.0;
           displaySpeed = _uploadspeed;
@@ -195,6 +198,7 @@ class _SpeedTesterState extends State<SpeedTester> {
       },
       onProgress: (double percent, TestResult data) {
         setState(() {
+          unitText = data.unit == SpeedUnit.kbps ? 'Kb/s' : 'Mb/s';
           if (data.type == TestType.download) {
             _downloadspeed = data.transferRate;
             displaySpeed = _downloadspeed;
@@ -219,17 +223,28 @@ class _SpeedTesterState extends State<SpeedTester> {
       onDefaultServerSelectionDone: (Client? client) {
         setState(() {
           service = false;
+          ip = client!.ip;
+          asn = client.asn;
+          isp = client.isp;
         });
       },
       onDownloadComplete: (TestResult data) {
-        // TODO
+        setState(() {
+          unitText = data.unit == SpeedUnit.kbps ? 'Kb/s' : 'Mb/s';
+          _downloadspeed = data.transferRate;
+          displaySpeed = _downloadspeed;
+        });
       },
       onUploadComplete: (TestResult data) {
-        // TODO
+        setState(() {
+          unitText = data.unit == SpeedUnit.kbps ? 'Kb/s' : 'Mb/s';
+          _uploadspeed = data.transferRate;
+          displaySpeed = _uploadspeed;
+        });
       },
-      onCancel: () {
-        // TODO Request cancelled callback
-      },
+      // onCancel: () {
+
+      // },
     );
   }
 }
